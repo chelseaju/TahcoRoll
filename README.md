@@ -8,7 +8,7 @@ git clone https://github.com/chelseaju/TahcoRoll.git
 ## Installation
 TahcoRoll is implemented in C++14, and requires compiler g++ 4.9 and above. Please run the following commands to compile the executables:
 ```
-cd Fleximer
+cd src
 make
 ```
 Binary files are also provided:
