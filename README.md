@@ -1,4 +1,3 @@
-TahcoRoll
 TahcoRoll: An Efficient Approach for Signature Profiling in Genomic Data through Vairable-Length k-mers
 
 ## Download
