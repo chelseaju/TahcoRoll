@@ -4,16 +4,16 @@ As one of the baseline comparisons, the naive implementation is to scan through 
 
 ## To run:
 ```
- python naive_v1.py 
+python naive_v1.py 
 	-s --signatures selected_kmers
-        -i --reads read_file
-        -o --outfile output_file
+	-i --reads read_file
+	-o --outfile output_file
 ```
 ## To record the memory footprint:
 ```
- mprof run -C python naive_v1.py 
+mprof run -C python naive_v1.py 
 	-s --signatures selected_kmers
-        -i --reads read_file
-        -o --outfile output_file
+	-i --reads read_file
+	-o --outfile output_file
 ```
 
