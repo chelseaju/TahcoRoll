@@ -9,4 +9,11 @@ As one of the baseline comparisons, the naive implementation is to scan through 
         -i --reads read_file
         -o --outfile output_file
 ```
+## To record the memory footprint
+```
+ mprof run -C python naive_v1.py 
+	-s --signatures selected_kmers
+        -i --reads read_file
+        -o --outfile output_file
+```
 
