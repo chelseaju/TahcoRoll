@@ -21,21 +21,20 @@ make
 
 ## To run:
 ```
-	python kmc3_v1.py
-		-i --read fastq
-		-s --kmer list of kmers
-		-o --outfile
-		-t --tmpdir directory to store temporary files, will be delted by the end of the program
+python kmc3_v1.py
+	-i --read fastq
+	-s --kmer list of kmers
+	-o --outfile
+	-t --tmpdir directory to store temporary files, will be delted by the end of the program
 ```
 
 ## To record the memory footprint:
 ```
-   mprof run -C  python kmc3_v1.py
-        -i --read fastq
-        -s --kmer list of kmers
-        -o --outfile
-        -t --tmpdir directory to store temporary files, will be delted by the end of the program
-
+mprof run -C  python kmc3_v1.py
+	-i --read fastq
+	-s --kmer list of kmers
+	-o --outfile
+	-t --tmpdir directory to store temporary files, will be delted by the end of the program
 ```
 
 ### Reference:
