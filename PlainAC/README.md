@@ -4,17 +4,16 @@ As one of the baseline comparisons, we compare to the plain version of the Aho-C
 
 ## To run:
 ```
-	python plainAC_v1.py
-		-s --signatures selected_kmers
-		-i --reads read_file
-		-o --outfile output_file
+python plainAC_v1.py
+	-s --signatures selected_kmers
+	-i --reads read_file
+	-o --outfile output_file
 ```
 
 ## To record the memory footprint:
 ```
-    mprof run -C python plainAC_v1.py
-        -s --signatures selected_kmers
-        -i --reads read_file
-        -o --outfile output_file
+mprof run -C python plainAC_v1.py
+	-s --signatures selected_kmers
+	-i --reads read_file
+	-o --outfile output_file
 ```
-
