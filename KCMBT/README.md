@@ -1,5 +1,7 @@
 ## Description
-[KCMBT](https://github.com/abdullah009/kcmbt_mt)[1] uses a cache efficient burst trie to store compact *k*-mers. The trie structure stores *k*-mers that share the same prefix in the same container, when a container is full, *k*-mers are sorted and burst. It is however limited to process *k*-mers with *k* less than 32. We first load the list of *k*-mers into memory. KCMBT generates binary files containing *k*-mers and their counts. We use *kcmbtdump* to convert the binary data into human readable files. We scan through each *k*-mer in the output files to extract the frequency of our representative *k*-mers. 
+[KCMBT](https://github.com/abdullah009/kcmbt_mt)[1] uses a cache efficient burst trie to store compact *k*-mers. The trie structure stores *k*-mers that share the same prefix in the same container, when a container is full, *k*-mers are sorted and burst. It is however limited to process *k*-mers with *k* less than 32. 
+
+We first load the list of *k*-mers into memory. KCMBT generates binary files containing *k*-mers and their counts. We use *kcmbt_dump* to convert the binary data into human readable files. We scan through each *k*-mer in the output files to extract the frequency of our representative *k*-mers. 
 
 ```
 bin/kcmbt -k k -i readfile -t 1
