@@ -4,7 +4,7 @@ KMC scan reads one block at a time, and use a number of splitter threads to proc
 We use its main program to count the *k*-mer of all sizes seen in the list, with one *k* at a time. We set the *-cs* parameter to be 4294967295 to ensure all of the frequently occurred *k*-mers are included. 
 
 ```
-	./kmc -t1 -sr1 -kK -ci0 -cs4294967295 -sf1 -sp1 readfile sampe_db tmpdir
+bin/kmc -t1 -sr1 -kK -ci0 -cs4294967295 -sf1 -sp1 readfile sampe_db tmpdir
 ```
 
 KMC provides an C++ API to load the compressed *k*-mer occurrences into memory, and to retrieve the frequency of a specific *k*-mer. We develop a C++ module to utilize this API (see src/api_call_query.cpp)
@@ -15,8 +15,8 @@ KMC provides an C++ API to load the compressed *k*-mer occurrences into memory, 
 #### The source code for KMC API and the code that utilizes this API is located in /src. To compile from scratch, run
 
 ```
-	cd src
-	make
+cd src
+make
 ```
 
 ## To run:
