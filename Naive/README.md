@@ -5,8 +5,8 @@ The Naive method is implemented in C++11.
 
 ## Installation
 ```
-	cd src
-	make
+cd src
+make
 ```
 
 ## To run:
