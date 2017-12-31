@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Get directory where the script is located (used to find kanalyze.jar)
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+# Set memory
+if [[ $1 == --mem* ]]; then
+	IFS='=' read -ra MEM_ARG <<< "$1"
+
+	if [ ${#MEM_ARG[@]} == 1 ]; then
+		MEM=$2
+		shift
+		shift
+	else
+		MEM=${MEM_ARG[1]}
+		shift
+	fi
+else
+	# No --mem as the first argument, use default
+	MEM=3G
+fi
+
+# Execute
+java -Xmx${MEM} -jar ${DIR}/kanalyze.jar count "$@"
+
