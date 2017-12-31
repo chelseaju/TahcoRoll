@@ -2,11 +2,7 @@
 	Function: Given a read file, and a list of kmer, return the kmer frequency 
 	separate kmer into different files based on their sizes, and use kmc_api to query
 	To Run:	
-		python kmc3_v1.py  
-			-i --read fastq
-			-s --kmer list of kmers
-			-o --outfile
-			-t --tmpdir
+		python kmc3.py signatures readfile outfile tmpdir  
 	Author: Chelsea Ju
 	Date: 2017-07-02
 """		
@@ -103,12 +99,15 @@ def main(parser):
 	print('Total runtime: %s seconds' %(time.time() - start_time))
 
 if __name__ == "__main__":
-	parser = argparse.ArgumentParser(prog="kmc3_v1.py")
-	parser.add_argument("-i", "--read", dest="readfile", type=str, help="sequencing read file", required = True)
-	parser.add_argument("-s", "--kmer", dest="kmer", type=str, help="list of kmers", required = True)
-	parser.add_argument("-o", "--outfile", dest="outfile", type=str, help="output filename", required = True)
-	parser.add_argument("-t", "--tmpdir", dest="tmpdir", type=str, help="temporary directory", required = True)
+	parser = argparse.ArgumentParser(prog="kmc3.py")
+	#parser.add_argument("-i", "--read", dest="readfile", type=str, help="sequencing read file", required = True)
+	#parser.add_argument("-s", "--kmer", dest="kmer", type=str, help="list of kmers", required = True)
+	#parser.add_argument("-o", "--outfile", dest="outfile", type=str, help="output filename", required = True)
+	#parser.add_argument("-t", "--tmpdir", dest="tmpdir", type=str, help="temporary directory", required = True)
+
+    parser.add_argument( dest="signature", type=str, help="list of kmers")
+    parser.add_argument(dest="readfile", type=str, help="sequencing read file")
+    parser.add_argument( dest="outfile", type=str, help="output filename")
+    parser.add_argument( dest="tmpdir", type=str, help="temporary directory")
 	main(parser)	
-#	mem_usage = memory_usage((main, (parser,)), "include-children")
-#	print('Maximum memory usage: %s' % max(mem_usage))
 
