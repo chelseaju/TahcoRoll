@@ -1,7 +1,7 @@
 ## Description
 [Tallymer](http://genometools.org/tools/gt_tallymer_occratio.html)[1] is tailored to detect *de novo* repetitive elements with sizes ranging from 10 to 500bp in the genome. The algorithm first constructs an enhanced suffix-array, and indexes *k*-mers for a fixed value of *k*. The indexing step needs to be repeated for different *k*'s.
 
-We first separate a list of *k*-mers into different files based on their sizes. Tallymer builds an enhanced suffix-array on read data through the function *gt suffixerator*. Since it provides a function to query the count of a set of *k*-mers, we first separate the representative *k*-mers into different files based on their sizes. For each *k*, we use *gt tallymer mindex* to extract the *k*-mer index and count from the enhanced suffix-array, and use *gt tallymer search* to retrieve their counts. 
+Tallymer builds an enhanced suffix-array on read data through the function *gt suffixerator*. Since it provides a function to query the count of a set of *k*-mers, we first separate the representative *k*-mers into different files based on their sizes. For each *k*, we use *gt tallymer mindex* to extract the *k*-mer index and count from the enhanced suffix-array, and use *gt tallymer search* to retrieve their counts. 
 
 ```
 bin/gt suffixerator -dna -pl -tis -suf -lcp -v -parts 4 -db readfile -indexname tmpdir/reads
