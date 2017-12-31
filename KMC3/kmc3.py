@@ -71,7 +71,7 @@ def query_kmers(kmer_size, tmpdir, outfile):
 def main(parser):
 	option = parser.parse_args()
 	readfile = option.readfile
-	kmer = option.kmer
+	kmer = option.signature
 	outfile = option.outfile
 	tmpdir = option.tmpdir
 
@@ -105,9 +105,9 @@ if __name__ == "__main__":
 	#parser.add_argument("-o", "--outfile", dest="outfile", type=str, help="output filename", required = True)
 	#parser.add_argument("-t", "--tmpdir", dest="tmpdir", type=str, help="temporary directory", required = True)
 
-    parser.add_argument( dest="signature", type=str, help="list of kmers")
-    parser.add_argument(dest="readfile", type=str, help="sequencing read file")
-    parser.add_argument( dest="outfile", type=str, help="output filename")
-    parser.add_argument( dest="tmpdir", type=str, help="temporary directory")
+	parser.add_argument( dest="signature", type=str, help="list of kmers")
+	parser.add_argument(dest="readfile", type=str, help="sequencing read file")
+	parser.add_argument( dest="outfile", type=str, help="output filename")
+	parser.add_argument( dest="tmpdir", type=str, help="temporary directory")
 	main(parser)	
 
