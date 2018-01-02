@@ -2,7 +2,7 @@
 
 [DSK](https://github.com/GATB/dsk)[1] is a disk-based hashing method, which divides *k*-mers into bins using a specific hash function based on the targeted memory and disk space. We compile its source code with different parameters to account for arbitrary *k*-mer lengths. We set *-DKSIZELIST* to 32, 96, and 160 based on the range of the *k*-mer sizes in the list. If the list contains all possible sizes from 15 to 150, we set *-DKSIZELIST="32 64 96 128 160"*.
 
-Given a list of *k*-mers, we first load them to memory and determine the range of the sizes. We index the reads with different *k's* using the main program of the appropriate compiled code, and dump the all possible *k*-mer frequencies into a human readable format. The final frequencies of the representative *k*-mers are retrieved by examining each *k*-mer from the dump function. 
+Given a list of *k*-mers, we first load them to memory and determine the range of their sizes. We index reads with different *k's* using the main program of the appropriate compiled code, and dump all *k*-mer frequencies into a human readable format. The final frequencies of the representative *k*-mers are retrieved through the output from the dump function. 
 
 ```
 bin/dsk_wide/dsk -verbose 0 -file readfile -kmer-size k -abundance-min 0 -out tmpdir/kmers.h5 -out-tmp tmpdir -out-compress 9
