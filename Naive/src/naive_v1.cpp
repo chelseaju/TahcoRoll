@@ -60,7 +60,7 @@ set<int> load_signatures(const string &signature_file, unordered_map <string, in
 		while(getline(infile, line)){
 			int s_size = line.size();
 			krange.insert(s_size);
-
+			upper(line);
 			signatures[line] = 0;
 		}		
 	}
