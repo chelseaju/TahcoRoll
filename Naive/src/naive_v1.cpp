@@ -94,6 +94,8 @@ void count_signatures( unordered_map <string, int> &signatures, set<int> &krange
 		while(getline(infile, line)){
 			if(line_counter % file_format == 1){
 
+				uppeR(line);
+
 				// scan through read with multiple k
 				for(auto k:krange){
 					for(int i = 0; i < line.length() - k + 1; i++){
