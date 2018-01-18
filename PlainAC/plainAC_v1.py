@@ -1,9 +1,6 @@
 """
-	Function: Compute the kmer count using aho-corasick
-	To Run: python plainAC_v1.py
-		-s --signatures selected_kmers
-		-i --reads read_file
-		-o --outfile output_file
+	Function: Compute the kmer count using aho-corasick - python implementation
+	To Run: python plainAC_v1.py signatures readfile outfile
 	Author: Chelsea Ju
 """
 
@@ -95,8 +92,8 @@ def export_profile(profile, outfile):
 
 def main(parser):
         option = parser.parse_args()
-        sigmer_file = option.sigmer_file
-        read_file = option.read_file
+        sigmer_file = option.signature
+        read_file = option.readfile
         outfile = option.outfile
 
 	start_time = time.time()
@@ -115,9 +112,9 @@ def main(parser):
 if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser(prog="plainAC_v1.py")
-	parser.add_argument("-s", "--sigmers", dest = "sigmer_file", type=str, help="sigmer file", required = True)
-	parser.add_argument("-i", "--reads", dest = "read_file", type=str, help="read file in fastq or fasta", required = True)
-	parser.add_argument("-o", "--outfile", dest="outfile", type=str, help="output filename", required = True)
+	parser.add_argument(dest = "signature", type=str, help="list of kmers")
+	parser.add_argument(dest = "readfile", type=str, help="read data in fastq or fasta")
+	parser.add_argument(dest = "outfile", type=str, help="output filename")
 	main(parser)
 #	mem_usage = memory_usage((main, (parser,)))
 #       print('Maximum memory usage: %s' % max(mem_usage))
