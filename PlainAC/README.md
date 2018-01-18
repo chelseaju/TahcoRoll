@@ -8,6 +8,14 @@ bin/plainAC signatures reads outfile
 
 plainAC_v1.py uses the python Aho-Corasick libraries; plainAC_v2.py is a wrapper function that calls the C++ implementation. 
 
+## Installation
+The binary code for the C++ implementation is located in /bin.
+The source code is located in /src. To compile from scratch, run
+
+```
+cd src
+make
+```
 
 ## To run:
 ```
