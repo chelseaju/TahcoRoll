@@ -11,14 +11,13 @@ make
 
 ## To run:
 ```
-python naive.py signatures readfile outfile tmpdir
+python naive.py signatures readfile outfile
 	signature = list of kmers
 	readfile = fasta or fastq
 	outfile = name of outfile
-	tmpdir = temporary directory to store files, and will be delted by the end of the program
 ```
 
 ## To record the memory footprint:
 ```
-mprof run -C python naive.py signatures readfile outfile tmpdir 
+mprof run -C python naive.py signatures readfile outfile 
 ```
