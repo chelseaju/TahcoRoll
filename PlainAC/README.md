@@ -5,6 +5,7 @@ To run the C++ implementation directly:
 ```
 bin/plainAC signatures reads outfile
 ```
+
 plainAC_v1.py uses the python Aho-Corasick libraries; plainAC_v2.py is a wrapper function that calls the C++ implementation, which uses the features from C++11. 
 
 
