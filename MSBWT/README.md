@@ -7,10 +7,12 @@ We build the multi-string BWTs on all reads. This compressed representation is s
 ### for short reads
 ```
 bin/msbwt cffq --uniform --compressed -p 1 tmpdir readfile
+bin/msbwt massquery --rev-comp tmpdir signature tmpfile
 ```
 ### for long reads
 ```
 bin/msbwt cffq -p 1 tmpdir readfile 
+bin/msbwt massquery --rev-comp tmpdir signature tmpfile
 ```
 
 ## To run:
