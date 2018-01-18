@@ -3,6 +3,8 @@
 
 Tallymer builds an enhanced suffix-array on read data through the function *gt suffixerator*. Since it provides a function to query the count of a set of *k*-mers, we first separate the representative *k*-mers into different files based on their sizes. For each *k*, we use *gt tallymer mindex* to extract the *k*-mer index and count from the enhanced suffix-array, and use *gt tallymer search* to retrieve their counts. 
 
+The binary code of Tallymer is located in /bin.
+
 ```
 bin/gt suffixerator -dna -pl -tis -suf -lcp -v -parts 4 -db readfile -indexname tmpdir/reads
 bin/gt tallymer mkindex -mersize k -minocc 1 -indexname kmer_index -counts -pl -esa reads

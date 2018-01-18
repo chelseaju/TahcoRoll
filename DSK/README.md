@@ -4,6 +4,8 @@
 
 Given a list of *k*-mers, we first load them to memory and determine the range of their sizes. We index reads with different *k's* using the main program of the appropriate compiled code, and dump all *k*-mer frequencies into a human readable format. The final frequencies of the representative *k*-mers are retrieved through the output from the dump function. 
 
+The binary code of DSK is located in /bin
+
 ```
 bin/dsk_wide/dsk -verbose 0 -file readfile -kmer-size k -abundance-min 0 -out tmpdir/kmers.h5 -out-tmp tmpdir -out-compress 9
 bin/dsk_wide/dsk2ascii -verbose -file tmpdir/kmers.h5 -out tmpdir/kmers.txt

@@ -3,11 +3,12 @@
 
 We first load the list of *k*-mers into memory. KCMBT generates binary files containing *k*-mers and their counts. We use *kcmbt_dump* to convert the binary data into human readable files. We scan through each *k*-mer in the output files to extract the frequency of our representative *k*-mers. 
 
+The binary code of KCMBT is located in /bin
+
 ```
 bin/kcmbt -k k -i readfile -t 1
 bin/kcmbt_dump 1
 ```
-The binary code of KCMBT is located in /bin
 
 
 ## To run:

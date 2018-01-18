@@ -4,6 +4,8 @@
 
 We build the multi-string BWTs on all reads. This compressed representation is stored in files, and later loaded in memory for frequency retrieval. It is one of the implementations that does not require scanning through reads one *k* at a time.
 
+The binary code of MSBWT is located in /bin
+
 ### for short reads
 ```
 bin/msbwt cffq --uniform --compressed -p 1 tmpdir readfile

@@ -4,6 +4,8 @@ As one of the baseline comparisons, the naive implementation is to scan through 
 The Naive method is implemented in C++11.
 
 ## Installation
+The binary code is located in /bin. The source code is located in /src. To compile from scratch, run
+
 ```
 cd src
 make
