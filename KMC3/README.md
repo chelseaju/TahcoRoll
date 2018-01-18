@@ -11,8 +11,8 @@ KMC provides an C++ API to load the compressed *k*-mer occurrences into memory, 
 
 
 ## Installation
-#### The binary source code of KMC is located in /bin
-#### The source code for KMC API and the code that utilizes this API is located in /src. To compile from scratch, run
+The binary source code of KMC is located in /bin.
+The source code for KMC API and the code that utilizes this API is located in /src. To compile from scratch, run
 
 ```
 cd src
