@@ -1,21 +1,24 @@
 """
 	Function: Given a read file, and a list of kmer, return the kmer frequency 
-	v2: separate the kmer into different buckets, check complimentary kmer for palindrome only 
+	separate the kmer into different buckets (need double hash because KCMBT does not use canonical kmer) 
 	To Run:	
-		python kmcbt_v1.py  
-			-i --read fastq
-			-s --kmer list of kmers
-			-o --outfile
-			-t --tmpdir
+	python kmcbt_v1.py
+		-i --read fastq
+		-s --kmer list of kmers
+		-o --outfile
+		-t --tmpdir directory to store temporary files, which is required for kcmbt_dump
+
 	Author: Chelsea Ju
 	Date: 2017-07-10
 """		
 import sys, re, os, argparse, datetime, random, time
 
+
 ## required absolute path
 ## change it to the path of the source code
-KCMBT="/home/chelseaju/TahcoRoll/TahcoRoll/KCMBT/kcmbt_mt/bin/kcmbt"
-KCMBT_DUMP="/home/chelseaju/TahcoRoll/TahcoRoll/KCMBT/kcmbt_mt/bin/kcmbt_dump"
+KCMBT="/home/chelseaju/TahcoRoll/TahcoRoll/KCMBT/bin/kcmbt"
+KCMBT_DUMP="/home/chelseaju/TahcoRoll/TahcoRoll/KCMBT/bin/kcmbt_dump"
+
 
 def echo(msg):
         print "[%s] %s" % (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), str(msg))
@@ -44,8 +47,8 @@ def load_kmer(kmerfile):
 		k = len(line)
 
 		if(not kmer_hash.has_key(k)):
-			kmer_hash[k] = set()
-		kmer_hash[k].add(line)	
+			kmer_hash[k] = {}
+		kmer_hash[k][line] = 0	
 	return kmer_hash
 
 
@@ -72,11 +75,18 @@ def index_query_reads(readfile, outfile, kmer_hash, tmpdir):
 		fh = open(outprefix + "/" + "kmer_list.txt", 'rb')
 		for line in fh:
 			(mer, count) = line.rstrip().split()
-			if(mer in current_kmer):
-				if(mer == reverse_complimentary(mer)):
-					count = int(count) * 2
-				outfh.write("%s\t%d\n" %(mer, int(count)))
+			rc_mer = reverse_complimentary(mer)
+
+			if(current_kmer.has_key(mer) and current_kmer.has_key(rc_mer)):
+				current_kmer[mer] += int(count)*2
+			elif(current_kmer.has_key(mer)):
+				current_kmer[mer] += int(count)
+			elif(current_kmer.has_key(rc_mer)):
+				current_kmer[rc_mer] += int(count)
 		fh.close()
+	
+		for mer in current_kmer.keys():
+			outfh.write("%s\t%d\n" %(mer, current_kmer[mer]))
 
 	outfh.close()
 
@@ -107,12 +117,10 @@ def main(parser):
 	print('Total runtime: %s seconds' %(time.time() - start_time))
 
 if __name__ == "__main__":
-	parser = argparse.ArgumentParser(prog="kmcbt_v1.py")
+	parser = argparse.ArgumentParser(prog="kcmbt_v1.py")
 	parser.add_argument("-i", "--read", dest="readfile", type=str, help="sequencing read file", required = True)
 	parser.add_argument("-s", "--kmer", dest="kmer", type=str, help="list of kmers", required = True)
 	parser.add_argument("-o", "--outfile", dest="outfile", type=str, help="output filename", required = True)
 	parser.add_argument("-t", "--tmpdir", dest="tmpdir", type=str, help="temporary directory", required = True)
   	main(parser)	
-#	mem_usage = memory_usage((main, (parser,)), "include-children")
-#	print('Maximum memory usage: %s' % max(mem_usage))
 
