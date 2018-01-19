@@ -38,8 +38,8 @@ def main(parser):
 	os.system("%s massquery --rev-comp %s %s %s" %(MSBWT, tmpdir, kmer, tmpfile))
 	os.system("awk -F',' '{print $1\"\\t\"$2+$3}' %s > %s" %(tmpfile, outfile))
 	
-	#echo("Cleaning")
-	#os.system("rm -rf %s" %(tmpdir))
+	echo("Cleaning")
+	os.system("rm -rf %s" %(tmpdir))
 
 	echo("Done")
 	print('Total runtime: %s seconds' %(time.time() - start_time))
