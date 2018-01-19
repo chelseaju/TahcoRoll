@@ -13,7 +13,7 @@ bin/kcmbt_dump 1
 
 ## To run:
 ```
-python kmcbt_v1.py
+python kmcbt.py
 	-i --read fastq
 	-s --kmer list of kmers
 	-o --outfile
@@ -22,7 +22,7 @@ python kmcbt_v1.py
 
 ## To record the memory footprint:
 ```
-mprof run -C python kmcbt_v1.py
+mprof run -C python kmcbt.py
     -i --read fastq
     -s --kmer list of kmers
     -o --outfile
