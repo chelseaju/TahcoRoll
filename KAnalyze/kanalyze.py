@@ -10,7 +10,7 @@
 import sys, re, os, argparse, datetime, time
 
 ## need absolute path
-KA="/home/chelseaju/TahcoRoll/TahcoRoll/KAnalyze/bin/count"
+KA="bin/kanalyze.jar"
 
 def echo(msg):
         print "[%s] %s" % (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), str(msg))
@@ -65,8 +65,11 @@ def index_query_kmers_reads(kmer_hash, tmpdir, readfile, outfile):
 		kmer_out = tmpdir + "/" + str(k) + "mers.kc"
 
 		echo("Indexing %smers" %(str(k)))
-		## CMD: ./bin/count -d 1 -f fastq -k k -l 1 -o tmpdir/kmer.kc -rcanonical --kmerfilter kmerfile:kmer_file -t 1 readfile
-		os.system("%s -d 1 -f fastq -k %d -l 1 -o %s -rcanonical --kmerfilter kmerfile:%s -t 1 %s" %(KA, k, kmer_out, kmer_file, readfile))
+#		## CMD: ./bin/count -d 1 -f fastq -k k -l 1 -o tmpdir/kmer.kc -rcanonical --kmerfilter kmerfile:kmer_file -t 1 readfile
+#		os.system("%s -d 1 -f fastq -k %d -l 1 -o %s -rcanonical --kmerfilter kmerfile:%s -t 1 %s" %(KA, k, kmer_out, kmer_file, readfile))
+
+		## CMD: java -jar -Xmx20G ./bin/kanalyze.jar count -d 1 -f fastq -k k -l 1 -o tmpdir/kmer.kc -rcanonical --kmerfilter kmerfile:kmer_file -t 1 readfile
+		os.system("java -jar -Xmx20G %s count -d 1 -f fastq -k %d -l 1 -o %s -rcanonical --kmerfilter kmerfile:%s -t 1 %s" %(KA, k, kmer_out, kmer_file, readfile))
 
 		echo("Exporting")
 		fh = open(kmer_out, 'rb')
