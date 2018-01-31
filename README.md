@@ -18,7 +18,8 @@ tahcoroll, tahcoload
 
 Test data is provided under /test_data
 
-## To profile variable-length k-mers:
+## To Run:
+profiling a set of variable-length k-mers:
 ```
 ./bin/tahcoroll test_data/small_01200000_sortedAlphabet.txt test_data/sample.fq
 ```
