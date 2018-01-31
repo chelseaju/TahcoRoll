@@ -16,3 +16,10 @@ Binary files are also provided:
 tahcoroll, tahcoload
 ```
 
+Test data is provided under /test_data
+
+## To Run:
+```
+./bin/tahcoroll test_data/small_01200000_sortedAlphabet.txt test_data/sample.fq
+```
+
