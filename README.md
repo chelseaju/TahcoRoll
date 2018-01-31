@@ -18,8 +18,13 @@ tahcoroll, tahcoload
 
 Test data is provided under /test_data
 
-## To Run:
+## To profile variable-length k-mers:
 ```
 ./bin/tahcoroll test_data/small_01200000_sortedAlphabet.txt test_data/sample.fq
+```
+
+tahcoload is used to evaluate the loading time of different k-mer sets. To run this script:
+```
+./bin/tahcoload test_data/small_01200000_sortedAlphabet.txt
 ```
 
