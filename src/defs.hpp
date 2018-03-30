@@ -27,8 +27,8 @@ inline char char2comp(char __ch){
 
 inline int8_t char2binary(char __ch){
     if(__ch == 'A' || __ch == 'a') return 0;
-    else if(__ch == 'C' || __ch == 'c') return 0;
-    else if(__ch == 'G' || __ch == 'g') return 1;
+    else if(__ch == 'C' || __ch == 'c') return 1;
+    else if(__ch == 'G' || __ch == 'g') return 0;
     else if(__ch == 'T' || __ch == 't') return 1;
     else{
         assert(false);
