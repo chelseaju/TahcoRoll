@@ -31,11 +31,12 @@ int main(int argc, const char **argv){
     std::cout << data.size() << " patterns" << std::endl;
 
     Tahco model(&data, num_trees);
+	std::cout << "Loading Time: " << static_cast<double>(clock() - basic_start) / CLOCKS_PER_SEC << "s" << std::endl;
 
 	basic_start = clock();
     // model.verify_tree_building();
     model.profile_patterns(argv[2]);
-    std::cout << "Time: " << static_cast<double>(clock() - basic_start) / CLOCKS_PER_SEC << "s" << std::endl;
+    std::cout << "Profiling Time: " << static_cast<double>(clock() - basic_start) / CLOCKS_PER_SEC << "s" << std::endl;
     
 
     if(argc > 1 + 3){
