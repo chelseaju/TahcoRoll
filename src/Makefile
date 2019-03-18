@@ -3,9 +3,11 @@ CXXFLAGS+= -Ofast  -std=c++14 -march=native -Wall -Wextra -Wconversion -flto
  
 .PHONY: all clean
 
-all: tahcoroll
+all: tahcoroll tahcoload
 
 tahcoroll: file_reader.o tahco.o
 
+tahcoload: file_reader.o tahco.o
+
 clean:
-	$(RM) tahcoroll *.o
+	$(RM) tahcoroll tahcoload *.o
