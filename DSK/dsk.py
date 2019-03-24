@@ -12,10 +12,10 @@ import sys, re, os, argparse, datetime, time
 #from memory_profiler import memory_usage
 #from time import sleep
 
-DSK_SMALL="bin/dsk_small/"
-DSK_MID="bin/dsk_mid/"
-DSK_LARGE="bin/dsk_large/"
-DSK_WIDE="bin/dsk_wide/"
+DSK_SMALL="bin/dsk_small/"   # compiled with -DKSIZE_LIST=32
+DSK_MID="bin/dsk_mid/"       # compiled with -DKSIZE_LIST=96
+DSK_LARGE="bin/dsk_large/"   # compiled with -DKSIZE_LIST=160
+DSK_WIDE="bin/dsk_wide/"     # compiled with -DKSIZE_LIST="32 64 96 128 160"
 
 def echo(msg):
         print "[%s] %s" % (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), str(msg))

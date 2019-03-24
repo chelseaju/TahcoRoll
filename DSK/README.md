@@ -1,8 +1,8 @@
 ## Description
 
-[DSK](https://github.com/GATB/dsk)[1] is a disk-based hashing method, which divides *k*-mers into bins using a specific hash function based on the targeted memory and disk space. We compile its source code with different parameters to account for arbitrary *k*-mer lengths. We set *-DKSIZELIST* to 32, 96, and 160 based on the range of the *k*-mer sizes in the list. If the list contains all possible sizes from 15 to 150, we set *-DKSIZELIST="32 64 96 128 160"*.
-
-Given a list of *k*-mers, we first load them to memory and determine the range of their sizes. We index reads with different *k's* using the main program of the appropriate compiled code, and dump all *k*-mer frequencies into a human readable format. The final frequencies of the representative *k*-mers are retrieved through the output from the dump function. 
+[DSK](https://github.com/GATB/dsk)[1] is a disk-based hashing method, which divides *k*-mers into bins using a specific hash function based on the targeted memory and disk space. Since the experiments of DSK are only peformed on a small range of *k*-mers, we set *-DKSIZE_LIST* to 32 during compilation. 
+ 
+Given a list of *k*-mers, we first load them to memory and determine the range of their sizes. We index reads with different *k's* using the main program, and dump all *k*-mer frequencies into a human readable format. The final frequencies of the representative *k*-mers are retrieved through the output from the dump function. 
 
 The binary code of DSK is located in /bin
 
@@ -22,7 +22,7 @@ python dsk.py signatures readfile outfile tmpdir
 
 ## To record the memory footprint:
 ```
-mprof run -C  python dsk.py signatures readfile outfile tmpdir
+mprof run -C  python2.7 dsk.py signatures readfile outfile tmpdir
 ```
 
 ### Reference:
