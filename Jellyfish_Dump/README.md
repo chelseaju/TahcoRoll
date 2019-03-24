@@ -22,7 +22,7 @@ python jellyfish.py signatures readfile outfile tmpdir
 
 ## To record the memory footprint:
 ```
-mprof run -C  python jellyfish.py signatures readfile outfile tmpdir
+mprof run -C  python2.7 jellyfish.py signatures readfile outfile tmpdir
 ```
 
 ### Reference:
