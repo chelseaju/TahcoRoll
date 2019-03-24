@@ -13,7 +13,7 @@ bin/dsk_wide/dsk2ascii -verbose -file tmpdir/kmers.h5 -out tmpdir/kmers.txt
 
 ## To run:
 ```
-python dsk.py signatures readfile outfile tmpdir
+python2.7 dsk.py signatures readfile outfile tmpdir
 	signature = list of kmers
 	readfile = fasta or fastq
 	outfile = name of outfile
@@ -26,4 +26,4 @@ mprof run -C  python2.7 dsk.py signatures readfile outfile tmpdir
 ```
 
 ### Reference:
-[1]: G.  Rizk,  D.  Lavenier,  and  R.  Chikhi.   DSK:  K-mer  counting  with  very  low  memory  usage.Bioinformatics,29(5):652–653, mar 2013
+[1]: G.  Rizk,  D.  Lavenier,  and  R.  Chikhi.   DSK:  K-mer  counting  with  very  low  memory  usage.Bioinformatics,29(5):652–653, 2013.

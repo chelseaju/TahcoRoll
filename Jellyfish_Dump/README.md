@@ -13,7 +13,7 @@ bin/jellyfish dump -c countfile >> countresult
 
 ## To run:
 ```
-python jellyfish.py signatures readfile outfile tmpdir
+python2.7 jellyfish.py signatures readfile outfile tmpdir
 	signature = list of kmers
 	readfile = fasta or fastq
 	outfile = name of outfile
