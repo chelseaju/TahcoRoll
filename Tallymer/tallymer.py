@@ -1,8 +1,8 @@
 """
 	Function: Given a read file, and a list of kmer, return the kmer frequency 
-	v1: separate kmer into different files based on their sizes, and use mindex and search to query
+	v1: separate kmer into different files based on their sizes, and use mkindex and search to query
 	To Run:	
-		python tallymer_v1.py signature readfile outfile tmpdir
+		python2.7 tallymer.py signature readfile outfile tmpdir
 	Author: Chelsea Ju
 	Date: 2017-12-30
 """		
