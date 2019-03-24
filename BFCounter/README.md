@@ -28,6 +28,6 @@ mprof run -C  python2.7 bfcounter.py signatures readfile outfile tmpdir
 ```
 
 ### Reference:
-[1]: P. Melsted and J.K. Pritchard. Efficient counting of k-mers in DNA sequences using a bloom filter.BMC Bioinformatics,12:333, 2011.
+[1]: P. Melsted and J.K. Pritchard. Efficient counting of k-mers in DNA sequences using a bloom filter. BMC Bioinformatics,12:333, 2011.
 
 [2]: P. Melsted and B.J. Halldorsson. KmerStream: streaming algorithms for k-mer abundance estimation. Bioinformatics, 30(24):3541-3547, 2014.
