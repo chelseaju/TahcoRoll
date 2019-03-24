@@ -17,7 +17,7 @@ python2.7 tallymer.py signatures readfile outfile tmpdir
 	signature = list of kmers
 	readfile = fasta or fastq
 	outfile = name of outfile
-	tmpdir = temporary directory to store files, and will be delted by the end of the program
+	tmpdir = temporary directory to store files
 ```
 
 ## To record the memory footprint:
