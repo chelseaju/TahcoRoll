@@ -21,7 +21,7 @@ make
 
 ## To run:
 ```
-python plainAC_vX.py
+python2.7 plainAC_vX.py
 	-s --signatures selected_kmers
 	-i --reads read_file
 	-o --outfile output_file
@@ -29,7 +29,7 @@ python plainAC_vX.py
 
 ## To record the memory footprint:
 ```
-mprof run -C python plainAC_vX.py
+mprof run -C python2.7 plainAC_vX.py
 	-s --signatures selected_kmers
 	-i --reads read_file
 	-o --outfile output_file
