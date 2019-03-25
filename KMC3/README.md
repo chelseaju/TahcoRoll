@@ -21,7 +21,7 @@ make
 
 ## To run:
 ```
-python kmc3.py signatures readfile outfile tmpdir
+python2.7 kmc3.py signatures readfile outfile tmpdir
 	signature = list of kmers
 	readfile = fasta or fastq
 	outfile = name of outfile
@@ -30,8 +30,8 @@ python kmc3.py signatures readfile outfile tmpdir
 
 ## To record the memory footprint:
 ```
-mprof run -C  python kmc3.py signatures readfile outfile tmpdir
+mprof run -C  python2.7 kmc3.py signatures readfile outfile tmpdir
 ```
 
 ### Reference:
-[1]: M. Kokot, M. D lugosz, and S. Deorowicz.  KMC 3: counting and manipulating k-mer statistics.Bioinformatics,3(May):1–3, may 2017
+[1]: M. Kokot, M. D lugosz, and S. Deorowicz.  KMC 3: counting and manipulating k-mer statistics.Bioinformatics,3(May):1–3, 2017.

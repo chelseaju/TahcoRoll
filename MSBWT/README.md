@@ -19,7 +19,7 @@ bin/msbwt massquery --rev-comp tmpdir signature tmpfile
 
 ## To run:
 ```
-python msbwt.py signatures readfile outfile tmpdir
+python2.7 msbwt.py signatures readfile outfile tmpdir
 	signature = list of kmers
 	readfile = fasta or fastq
 	outfile = name of outfile
@@ -28,8 +28,8 @@ python msbwt.py signatures readfile outfile tmpdir
 
 ## To record the memory footprint:
 ```
-mprof run -C  python msbwt.py signatures readfile outfile tmpdir
+mprof run -C  python2.7 msbwt.py signatures readfile outfile tmpdir
 ```
 
 ### Reference:
-[1]: J. Holt and L. McMillan.  Merging of multi-string BWTs with applications.Bioinformatics, 30(24):3524–31, dec2014
+[1]: J. Holt and L. McMillan.  Merging of multi-string BWTs with applications.Bioinformatics, 30(24):3524–31, 2014.

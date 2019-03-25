@@ -13,7 +13,7 @@ bin/kcmbt_dump 1
 
 ## To run:
 ```
-python kmcbt.py
+python2.7 kmcbt.py
 	-i --read fastq
 	-s --kmer list of kmers
 	-o --outfile
@@ -22,7 +22,7 @@ python kmcbt.py
 
 ## To record the memory footprint:
 ```
-mprof run -C python kmcbt.py
+mprof run -C python2.7 kmcbt.py
     -i --read fastq
     -s --kmer list of kmers
     -o --outfile
@@ -30,4 +30,4 @@ mprof run -C python kmcbt.py
 ```
 
 ### Reference:
-[1]: A. A. Mamun, S. Pal, and S. Rajasekaran. KCMBT: A k-mer Counter based on Multiple Burst Trees.Bioinfor-matics, 32(18):2783–2790, sep 2016
+[1]: A. A. Mamun, S. Pal, and S. Rajasekaran. KCMBT: A k-mer Counter based on Multiple Burst Trees.Bioinfor-matics, 32(18):2783–2790, 2016.

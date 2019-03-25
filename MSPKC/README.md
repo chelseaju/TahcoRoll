@@ -11,7 +11,7 @@ The java package files are located in /bin
 
 ## To run:
 ```
-python mspkc.py signatures readfile outfile tmpdir
+python2.7 mspkc.py signatures readfile outfile tmpdir
 	signature = list of kmers
 	readfile = fasta or fastq
 	outfile = name of outfile
@@ -20,8 +20,8 @@ python mspkc.py signatures readfile outfile tmpdir
 
 ## To record the memory footprint:
 ```
-mprof run -C python mspkc.py signatures readfile outfile tmpdir
+mprof run -C python2.7 mspkc.py signatures readfile outfile tmpdir
 ```
 
 ### Reference:
-[1]: Y.  Li  and  X.  Yan.   MSPKmerCounter:  A  Fast  and  Memory  Efficient  Approach  for  K-mer  Counting.arXivpreprint, 1505.06550:1–7, may 2015
+[1]: Y.  Li  and  X.  Yan.   MSPKmerCounter:  A  Fast  and  Memory  Efficient  Approach  for  K-mer  Counting.arXivpreprint, 1505.06550:1–7, 2015.

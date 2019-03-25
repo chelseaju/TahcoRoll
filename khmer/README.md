@@ -32,4 +32,4 @@ mprof run -C  khmerEnv/bin/python2.7 khmer.py signatures readfile outfile tmpdir
 ### Reference:
 [1] Q. Zhang, J. Pell, R. Canino-Koning, A. C. Howe, and C. T. Brown.  These are not the K-mers you are lookingfor: Efficient online K-mer counting using a probabilistic data structure.PLoS ONE, 9(7), 2014.
 
-[2] G. Cormode and S. Muthukrishnan.  An improved data stream summary: The count-min sketch and its applica-tions.Journal of Algorithms, 55(1):58–75, apr 2005
+[2] G. Cormode and S. Muthukrishnan.  An improved data stream summary: The count-min sketch and its applica-tions.Journal of Algorithms, 55(1):58–75, 2005.

@@ -1,21 +1,21 @@
 """
 	Function: Given a read file, and a list of kmer, return the kmer frequency 
-	v3: use different dsk complilation
-	v2: separate kmer into different buckets, check for complementary sequence (DSK2 does not output canonical kmers)
 	v1: separate kmer into different files based on their sizes, load kmers into memory, scan through each kmer to get count
 	To Run:	
-		python dsk_v1.py signatures readfile outfile tmpdir 
+		python bfcounter.py signature readfile outfile tmpdir 
 	Author: Chelsea Ju
-	Date: 2017-07-05
+	Date: 2017-08-09
+	Last Modify: 2018-01-03
 """		
 import sys, re, os, argparse, datetime, time
 #from memory_profiler import memory_usage
 #from time import sleep
 
-DSK_SMALL="bin/dsk_small/"   # compiled with -DKSIZE_LIST=32
-DSK_MID="bin/dsk_mid/"       # compiled with -DKSIZE_LIST=96
-DSK_LARGE="bin/dsk_large/"   # compiled with -DKSIZE_LIST=160
-DSK_WIDE="bin/dsk_wide/"     # compiled with -DKSIZE_LIST="32 64 96 128 160"
+BFCOUNTER_SMALL="/home/chelseaju/TahcoRoll/TahcoRoll/BFCounter/bin/BFCounter_SMALL/BFCounter"  ## compiled with MAX_KMER_SIZE=32
+BFCOUNTER_MID="/home/chelseaju/TahcoRoll/TahcoRoll/BFCounter/bin/BFCounter_MID/BFCounter"      ## compiled with MAX_KMER_SIZE=96
+BFCOUNTER_LARGE="/home/chelseaju/TahcoRoll/TahcoRoll/BFCounter/bin/BFCounter_LARGE/BFCounter"  ## compiled with MAX_KMER_SIZE=160
+KMERSTREAM="/home/chelseaju/TahcoRoll/TahcoRoll/BFCounter/bin/KmerStream/KmerStream"
+
 
 def echo(msg):
         print "[%s] %s" % (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), str(msg))
@@ -54,36 +54,49 @@ def load_kmer(kmerfile):
 
 	return kmer_hash
 
+def kmer_estimation(kmer_sizes, readfile, tmpdir):
+	
+	kmer_count = {}
+
+	echo("Calling KmerStream")
+	## CMD ./KmerStream/KmerStream -k [list of k] -o kmer_estimation.txt -t 1 readfile --tsv
+	os.system("%s -k %s -o %s/%s -t 1 %s --tsv" %(KMERSTREAM, ",".join([str(k) for k in kmer_sizes]), tmpdir, "nKmers.tsv", readfile))
+
+	fh = open(os.path.join(tmpdir, "nKmers.tsv"), "r")
+	line = fh.readline()
+	for line in fh:
+		(Q, k, F0, f1, F1) = line.rstrip().split()
+		kmer_count[int(k)] = F0		
+	fh.close()
+
+	return kmer_count
+
+
+
 """
 	Index and Query kmers
 """
-def index_query_kmers_reads(kmer_hash, tmpdir, readfile, outfile):
+def index_query_kmers_reads(kmer_hash, kmer_count, tmpdir, readfile, outfile):
 
 	outfh = open(outfile, 'wb')
 
-	min_k = min(kmer_hash.keys())
-	max_k = max(kmer_hash.keys())
-
-	if(max_k < 32):
-		DSK = DSK_SMALL
-	elif(max_k < 96):
-		DSK = DSK_MID
-	elif(min_k > 96):
-		DSK = DSK_LARGE
-	else:
-		DSK = DSK_WIDE
-
-
 	for k in kmer_hash.keys():
 		current_kmer = kmer_hash[k]
-
 		echo("Indexing %smers" %(str(k)))
-		## CMD: ./bin/dsk -verbose 0 -file readfile -kmer-size k -abundance-min 0 -out tmpdir/kmers.h5 -out-tmp tmpdir -out-compress 9
-		os.system("%s/dsk -verbose 0 -file %s -kmer-size %d -abundance-min 0 -out %s/%dmers.h5 -out-tmp %s -out-compress 9" %(DSK, readfile,k, tmpdir, k, tmpdir))
+
+		if(k < 32):
+			BFCOUNTER = BFCOUNTER_SMALL
+		elif (k < 84):
+			BFCOUNTER = BFCOUNTER_MID
+		elif (k < 152):
+			BFCOUNTER = BFCOUNTER_LARGE
+
+		## CMD: ./BFCounter count -k k -n numK -t 1 -o outfile readfile
+		os.system("%s count -k %d -n %s -t 1 -o %s/%dmers.compress %s" %(BFCOUNTER, k, kmer_count[k], tmpdir,k, readfile))
 
 		echo("Dumping %smers" %(str(k)))
-		## CMD: ./bin/dsk2ascii -verbose -file tmpdir/kmers.h5 -out tmpdir/kmers.txt
-		os.system("%s/dsk2ascii -verbose 0 -file %s/%dmers.h5 -out %s/%dmers.txt" %(DSK, tmpdir, k, tmpdir, k))
+		## CMD: ./BFCounter dump -k k -i kmers.compress -o kmers.txt
+		os.system("%s dump -k %d -i %s/%dmers.compress -o %s/%dmers.txt" %(BFCOUNTER, k, tmpdir, k, tmpdir, k))
 
 		echo("Querying %smers" %(str(k)))
 		fh = open(tmpdir + "/" + str(k) + "mers.txt", 'rb')
@@ -91,7 +104,7 @@ def index_query_kmers_reads(kmer_hash, tmpdir, readfile, outfile):
 			(mer, count) = line.rstrip().split()
 			
 			rc_mer = reverse_complimentary(mer)
-
+				
 			if(mer in current_kmer):
 				if(mer == rc_mer):
 					count = int(count) * 2
@@ -101,12 +114,7 @@ def index_query_kmers_reads(kmer_hash, tmpdir, readfile, outfile):
 				outfh.write("%s\t%s\n" %(rc_mer, count))
 		fh.close()
 
-		echo("Cleaning tmp files")
-		os.system("rm %s/%dmers.*" %(tmpdir, k))
-
-
 	outfh.close()	
-
 
 def main(parser):
 	option = parser.parse_args()
@@ -123,30 +131,33 @@ def main(parser):
 	echo("Loading Kmers")
 	kmer_hash = load_kmer(kmer)
 
-	echo("Indexing Kmers and Reads")
-	index_query_kmers_reads(kmer_hash, tmpdir, readfile, outfile)
+	echo("Total Kmer Estimation")
+	kmer_count = kmer_estimation(kmer_hash.keys(), readfile, tmpdir)
 
-	echo("Removing Temp Files")
-	os.system("rm -rf %s" %(tmpdir))	
+	
+	echo("Indexing Kmers and Reads")
+	index_query_kmers_reads(kmer_hash, kmer_count, tmpdir, readfile, outfile)
+
+
+	#echo("Removing Temp Files")
+	#os.system("rm -rf %s" %(tmpdir))	
 
 	echo("Done")	
 
 	print('Total runtime: %s seconds' %(time.time() - start_time))
 
 if __name__ == "__main__":
+	parser = argparse.ArgumentParser(prog="bfcounter.py")
 
-	parser = argparse.ArgumentParser(prog="dsk.py")
+	parser.add_argument("signature", type=str, help="list of kmers")
+	parser.add_argument("readfile", type=str, help="reads in fastq or fasta")
+	parser.add_argument("outfile", type=str, help="output filename")
+	parser.add_argument("tmpdir", type=str, help="temporary directory")
 
-	parser.add_argument(dest="signature", type=str, help="list of kmers")
-	parser.add_argument(dest="readfile", type=str, help="read file in fasta or fastq")
-	parser.add_argument(dest="outfile", type=str, help="output filename")
-	parser.add_argument(dest="tmpdir", type=str, help="temporary directory")
-
-
-	## these don't work with mprof 
-#	parser.add_argument("-r", "--read", dest="readfile", type=str, help="sequencing read file", required = True)
-#	parser.add_argument("-l", "--kmer", dest="kmer", type=str, help="list of kmers", required = True)
+#	parser.add_argument("-i", "--read", dest="readfile", type=str, help="sequencing read file", required = True)
+#	parser.add_argument("-s", "--kmer", dest="kmer", type=str, help="list of kmers", required = True)
 #	parser.add_argument("-o", "--outfile", dest="outfile", type=str, help="output filename", required = True)
 #	parser.add_argument("-t", "--tmpdir", dest="tmpdir", type=str, help="temporary directory", required = True)
+
 	main(parser)	
 

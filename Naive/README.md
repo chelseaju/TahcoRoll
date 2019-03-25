@@ -13,7 +13,7 @@ make
 
 ## To run:
 ```
-python naive.py signatures readfile outfile
+python2.7 naive.py signatures readfile outfile
 	signature = list of kmers
 	readfile = fasta or fastq
 	outfile = name of outfile
@@ -21,5 +21,5 @@ python naive.py signatures readfile outfile
 
 ## To record the memory footprint:
 ```
-mprof run -C python naive.py signatures readfile outfile 
+mprof run -C python2.7 naive.py signatures readfile outfile 
 ```

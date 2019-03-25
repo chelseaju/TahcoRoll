@@ -1,6 +1,6 @@
 ## Description
 
-[Jellyfish](http://www.genome.umd.edu/jellyfish.html)[1] is one of the early developed softwares to efficiently count the *k*-mer occurrences in read data. It exploits the CAS (compare-and-swap) assembly instruction to update a memory location in a multi-threaded environment, and uses the 'quotienting technique' and bit-packed data structure to reduce wasted memory. It provides an efficient function to count a list of representative *k*-mers and dump the results to a human readable format. 
+[Jellyfish](http://www.genome.umd.edu/jellyfish.html)[1] exploits the CAS (compare-and-swap) assembly instruction to update a memory location in a multi-threaded environment, and uses the 'quotienting technique' and bit-packed data structure to reduce wasted memory. It provides an efficient function to count a list of representative *k*-mers and dump the results to a human readable format. 
 
 We first split the *k*-mers into different files based on their size *k*. We then repeate the counting step for different *k*'s.
 
@@ -13,7 +13,7 @@ bin/jellyfish dump -c countfile >> countresult
 
 ## To run:
 ```
-python jellyfish.py signatures readfile outfile tmpdir
+python2.7 jellyfish.py signatures readfile outfile tmpdir
 	signature = list of kmers
 	readfile = fasta or fastq
 	outfile = name of outfile
@@ -22,7 +22,7 @@ python jellyfish.py signatures readfile outfile tmpdir
 
 ## To record the memory footprint:
 ```
-mprof run -C  python jellyfish.py signatures readfile outfile tmpdir
+mprof run -C  python2.7 jellyfish.py signatures readfile outfile tmpdir
 ```
 
 ### Reference:
