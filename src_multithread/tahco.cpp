@@ -1,53 +1,47 @@
 #include "tahco.hpp"
 
 
-Node::Node(){
+Node::Node(size_t _depth){
+    depth = _depth;
+    next[0] = NULL;
+    next[1] = NULL;
+    fail = NULL;
     hashmap = NULL;
-    reset(-1);
     mtx = new std::mutex();
 }
 
-
-void Node::reset(size_t _depth){
-    depth = _depth;
-    fail = 0;
-    next[0] = 0;
-    next[1] = 0;
-    if(hashmap != NULL){
-        delete hashmap;
-    }
-    hashmap = NULL;
+Node::~Node(){
+    if(hashmap) delete hashmap;
+    if(next[0]) delete next[0];
+    if(next[1]) delete next[1];
 }
 
-
-size_t Tahco::get_next(size_t now, int8_t c){
-   if(nodes[now].next[c] == 0){ 
-       std::lock_guard<std::mutex> guard_tree(*tree_mtx);
-       if(num_nodes == nodes.size()){
-           nodes.emplace_back(Node());
-       }
-       std::lock_guard<std::mutex> guard_node(*nodes[num_nodes].mtx);
-       nodes[num_nodes].reset(nodes[now].depth + 1);
-       nodes[now].next[c] = num_nodes++;
-   }
-   return nodes[now].next[c];
+Node* Node::get_next(int8_t c){
+    if(next[c] == NULL){
+        std::lock_guard<std::mutex> guard_node(*mtx);
+        if(next[c] == NULL){
+            next[c] = new Node(depth + 1);
+        }
+    }
+    return next[c];
 }
 
 
 Tahco::Tahco(StringVector* _patterns_ptr, const Parameters &params){
     patterns_ptr = _patterns_ptr;
     num_trees = params.num_trees;
-    num_nodes = 0;
-    tree_mtx = new std::mutex();
     initialize();
 }
+
 
 void Tahco::initialize(){
     // Patterns
     StringVector &patterns = (*patterns_ptr);
     num_patterns = patterns.size();
+    min_len = SIZE_MAX;
     max_len = 0;
     for(size_t i = 0; i < num_patterns; ++i){
+        min_len = std::min(min_len, patterns[i]->length());
         max_len = std::max(max_len, patterns[i]->length());
     }
     
@@ -101,8 +95,6 @@ void Tahco::add_patterns_with_range(const size_t st, const size_t ed){
     StringVector &patterns = (*patterns_ptr);
     for(auto i = st; i < ed; ++i){
         add_pattern(*patterns[i], i);
-        max_len = std::max(max_len, patterns[i]->length());
-        min_len = std::min(min_len, patterns[i]->length());
     }
 }
 
@@ -117,20 +109,15 @@ void Tahco::profile_patterns(const std::string &fp, const Parameters &params){
         auto st = iter * num_patterns_per_tree;
         auto ed = std::min(st + num_patterns_per_tree, num_patterns);
 
-        // construct a trie        
-        size_t estimated_node_num = estimate_node_num(st, ed, 0);
-        std::cerr << estimated_node_num << " estimated nodes." << std::endl;
-        if(nodes.size() < estimated_node_num) {
-            nodes.resize(estimated_node_num + 2);
-        }
-        std::cerr << "reserved memory" << std::endl;
-        nodes[1].reset(0);
-        num_nodes = 2;
+        // construct a trie
+        root = new Node(0);
 
         // add patterns
         max_len = 0;
         min_len = SIZE_MAX;
         basic_start = clock();
+
+
         const size_t num_patterns_per_thread = (ed - st + params.num_threads - 1) / params.num_threads;
 
         ThreadVector threads;
@@ -151,12 +138,9 @@ void Tahco::profile_patterns(const std::string &fp, const Parameters &params){
         std::cerr << "Built tacho." << std::endl;
         std::cerr << "Total construction time: " << time_construction / CLOCKS_PER_SEC<< std::endl;
         
-        basic_start = clock();
         time_query += profile_patterns_with_tahco(fp);
-
-        for(size_t i = 0; i < num_nodes; ++i){
-            nodes[i].reset(0);
-        }
+        
+        delete root;
     }
 
 	std::cerr << "Total construction time: " << time_construction / CLOCKS_PER_SEC<< std::endl;
@@ -216,45 +200,47 @@ double Tahco::profile_patterns_with_tahco(const std::string &fp){
 
 
 void Tahco::add_pattern(std::string &pattern, size_t pattern_idx){
-    size_t cur_node = 1;
     int64_t cur_hash = 0;
+    Node* cur_node = root;
     for(auto it = pattern.begin(); it != pattern.end(); ++it){
         cur_hash = cur_hash * 5 + char2idx(*it);
         if(cur_hash >= MOD){
             cur_hash %= MOD;
         }
-        cur_node = get_next(cur_node, char2binary(*it));
-    }
-    std::lock_guard<std::mutex> guard(*nodes[cur_node].mtx);
-
-    if(nodes[cur_node].hashmap == NULL){
-        nodes[cur_node].hashmap = new Hashmap();
+        cur_node = cur_node->get_next(char2binary(*it));
     }
 
-    assert(nodes[cur_node].hashmap->count(cur_hash) == 0);
-    (*nodes[cur_node].hashmap)[cur_hash] = pattern_idx;
+    std::lock_guard<std::mutex> guard(*cur_node->mtx);
+
+    if(cur_node->hashmap == NULL){
+        cur_node->hashmap = new Hashmap();
+    }
+
+    assert(cur_node->hashmap->count(cur_hash) == 0);
+    cur_node->hashmap->insert({{cur_hash, pattern_idx}});
 }
 
 
 void Tahco::build_tahco(){
-    std::queue<size_t> q;
-    size_t cur, p;
+    std::queue<Node*> q;
+    Node* cur;
+    Node* p;
 
-    q.push(1);
+    q.push(root);
     while(!q.empty()){
         cur = q.front();
         q.pop();
         // 0
-        if(nodes[cur].next[0] > 0){
-            for(p = nodes[cur].fail; p > 0 && nodes[p].next[0] == 0; p = nodes[p].fail);
-            nodes[nodes[cur].next[0]].fail = (p)?(nodes[p].next[0]):(1);
-            q.push(nodes[cur].next[0]);
+        if(cur->next[0]){
+            for(p = cur->fail; p && p->next[0] == NULL; p = p->fail);
+            cur->next[0]->fail = (p)?(p->next[0]):(root);
+            q.push(cur->next[0]);
         }
         // 1
-        if(nodes[cur].next[1] > 0){
-            for(p = nodes[cur].fail; p > 0 && nodes[p].next[1] == 0; p = nodes[p].fail);
-            nodes[nodes[cur].next[1]].fail = (p)?(nodes[p].next[1]):(1);
-            q.push(nodes[cur].next[1]);
+        if(cur->next[1]){
+            for(p = cur->fail; p && p->next[1] == NULL; p = p->fail);
+            cur->next[1]->fail = (p)?(p->next[1]):(root);
+            q.push(cur->next[1]);
         }
     }
 }
@@ -287,13 +273,13 @@ inline int64_t Tahco::compute_range_hash(std::vector<int64_t> &hash, size_t L, s
 }
 
 void Tahco::match(std::string &text, std::vector<int64_t> &hash, std::vector<int64_t> &hashr){
-   // std::cerr << text << std::endl;
-
+    //std::cerr << text << std::endl;
 
     StringVector &patterns = (*patterns_ptr);
 
-    size_t p, pr;
-    size_t tmp;
+    Node* p;
+    Node* pr;
+    Node* tmp;
     int8_t b;
     int64_t h;
     size_t len = text.length();
@@ -302,12 +288,12 @@ void Tahco::match(std::string &text, std::vector<int64_t> &hash, std::vector<int
         hash.resize(len);
         hashr.resize(len);
     }
-    p = 1;
-    pr = 1;
+    p = root;
+    pr = root;
     for(size_t i = 0; i < len; ++i){
 		if(text[i] == 'N' || text[i] == 'n'){
 			hash[i] = 0;
-			p = 1;
+			p = root;
 		}else{
 			// update rolling hash
 			h = char2idx(text[i]);
@@ -317,21 +303,27 @@ void Tahco::match(std::string &text, std::vector<int64_t> &hash, std::vector<int
         	    hash[i] = mymod(hash[i-1] * 5 + h);
         	}
         	// match process
-        	for(b = char2binary(text[i]); p && !nodes[p].next[b]; p = nodes[p].fail);
-        	p = (p)?(nodes[p].next[b]):(1);
+        	for(b = char2binary(text[i]); p && p->next[b] == NULL; p = p->fail);
 
-        	for(tmp = p; tmp > 0; tmp = nodes[tmp].fail){
-            	if(nodes[tmp].hashmap){
-                	h = compute_range_hash(hash, (i + 1) - (nodes[tmp].depth), i);
-                	if(nodes[tmp].hashmap->count(h) > 0){
-                    	auto hv = nodes[tmp].hashmap->at(h);
-                    	if(patterns[hv]->back() == text[i] && 
-                        	patterns[hv]->at(nodes[tmp].depth - 2) == text[i-1] &&
-                    		patterns[hv]->at(nodes[tmp].depth - 4) == text[i-3] &&
-                           patterns[hv]->at(nodes[tmp].depth - 5) == text[i-4] &&
-                           patterns[hv]->at(nodes[tmp].depth - 3) == text[i-2]){
+        	p = (p)?(p->next[b]):(root);
+
+        	for(tmp = p; tmp; tmp = tmp->fail){
+            	if(tmp->hashmap){
+                	h = compute_range_hash(hash, (i + 1) - (tmp->depth), i);
+                	if(tmp->hashmap->count(h) > 0){
+                    	auto hv = tmp->hashmap->at(h);
+                    	if(patterns[hv]->back() == text[i]){
                             ++pattern_cnt[hv];
                         }
+                        /*
+                    	if(patterns[hv]->back() == text[i] &&
+                           patterns[hv]->at(tmp->depth - 2) == text[i-1] &&
+                           patterns[hv]->at(tmp->depth - 4) == text[i-3] &&
+                           patterns[hv]->at(tmp->depth - 5) == text[i-4] &&
+                           patterns[hv]->at(tmp->depth - 3) == text[i-2]){
+                            ++pattern_cnt[hv];
+                        }
+                        */
                     }
                 }
             }
@@ -339,7 +331,7 @@ void Tahco::match(std::string &text, std::vector<int64_t> &hash, std::vector<int
         
         if(text[len - 1 - i] == 'N' || text[len - 1 - i] == 'n'){
             hashr[i] = 0;
-            pr = 1;
+            pr = root;
         }else{
             // update rolling hash
             h = char2idx(char2comp(text[len - 1 - i]));
@@ -349,21 +341,27 @@ void Tahco::match(std::string &text, std::vector<int64_t> &hash, std::vector<int
                 hashr[i] = mymod(hashr[i-1] * 5 + h);
             }
             // match process
-            for(b = char2binary(char2comp(text[len - 1 - i])); pr && !nodes[pr].next[b]; pr = nodes[pr].fail);
-            pr = (pr)?(nodes[pr].next[b]):(1);
+            for(b = char2binary(char2comp(text[len - 1 - i])); pr && pr->next[b] == NULL; pr = pr->fail);
 
-            for(tmp = pr; tmp > 0; tmp = nodes[tmp].fail){
-                if(nodes[tmp].hashmap){
-                    h = compute_range_hash(hashr, (i + 1) - (nodes[tmp].depth), i);
-                    if(nodes[tmp].hashmap->count(h) > 0){
-                        auto hv = nodes[tmp].hashmap->at(h);
-                        if(patterns[hv]->back() == char2comp(text[len - 1 - i]) &&
-                           patterns[hv]->at(nodes[tmp].depth - 2) == char2comp(text[len - 1 - i + 1]) &&
-                           patterns[hv]->at(nodes[tmp].depth - 4) == char2comp(text[len - 1 - i + 3]) &&
-                           patterns[hv]->at(nodes[tmp].depth - 5) == char2comp(text[len - 1 - i + 4]) &&
-                           patterns[hv]->at(nodes[tmp].depth - 3) == char2comp(text[len - 1 - i + 2])){
+            pr = (pr)?(pr->next[b]):(root);
+
+            for(tmp = pr; tmp; tmp = tmp->fail){
+                if(tmp->hashmap){
+                    h = compute_range_hash(hashr, (i + 1) - (tmp->depth), i);
+                    if(tmp->hashmap->count(h) > 0){
+                        auto hv = tmp->hashmap->at(h);
+                        if(patterns[hv]->back() == char2comp(text[len - 1 - i])){
                             ++pattern_cnt[hv];
                         }
+                        /*
+                        if(patterns[hv]->back() == char2comp(text[len - 1 - i]) &&
+                           patterns[hv]->at(tmp->depth - 2) == char2comp(text[len - 1 - i + 1]) &&
+                           patterns[hv]->at(tmp->depth - 4) == char2comp(text[len - 1 - i + 3]) &&
+                           patterns[hv]->at(tmp->depth - 5) == char2comp(text[len - 1 - i + 4]) &&
+                           patterns[hv]->at(tmp->depth - 3) == char2comp(text[len - 1 - i + 2])){
+                            ++pattern_cnt[hv];
+                        }
+                        */
                     }
                 }
             }
@@ -386,44 +384,3 @@ void Tahco::output_results(const std::string &fp){
     wp.close();
 }
 
-
-void Tahco::verify_tree_building(){
-    StringVector &patterns = (*patterns_ptr);
-
-    size_t num_patterns_per_tree = (num_patterns + num_trees - 1) / num_trees;
-    
-    for(size_t iter = 0; iter < num_trees; ++iter){
-        std::cerr << "Tree " << iter << std::endl;
-        auto st = iter * num_patterns_per_tree;
-        auto ed = std::min(st + num_patterns_per_tree, num_patterns);
-
-        // construct a trie        
-        size_t estimated_node_num = estimate_node_num(st, ed, 0);
-        std::cerr << estimated_node_num << " estimated nodes." << std::endl;
-        nodes.reserve(estimated_node_num + 2);
-        std::cerr << "reserved memory" << std::endl;
-        while(nodes.size() < 2){
-            nodes.emplace_back(Node());
-        }
-        nodes[1].reset(0);
-        num_nodes = 2;
-
-        // add patterns
-        max_len = 0;
-        min_len = SIZE_MAX;
-        for(auto i = st; i < ed; ++i){
-            add_pattern(*patterns[i], i);
-            max_len = std::max(max_len, patterns[i]->length());
-            min_len = std::min(min_len, patterns[i]->length());
-        }
-        std::cerr << "Added patterns." << std::endl;
-
-        // build tahco
-        build_tahco();
-        std::cerr << "Built tacho." << std::endl;
-        
-        for(size_t i = 0; i < num_nodes; ++i){
-            nodes[i].reset(0);
-        }
-    }
-}

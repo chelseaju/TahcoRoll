@@ -10,6 +10,7 @@
 #include <cstring>
 #include <memory>
 #include <string>
+#include <utility>
 #include <unordered_map>
 #include <map>
 #include <mutex>
@@ -32,13 +33,15 @@ typedef std::unordered_map<int64_t, size_t> Hashmap;
 
 class Node{
     public:
-        size_t fail;
-        size_t next[2];
+        Node* fail;
+        Node* next[2];
         size_t depth;
-        void reset(size_t _depth);
         Hashmap *hashmap;
         std::mutex* mtx;
-        Node();
+
+        Node* get_next(int8_t c);
+        Node(size_t _depth);
+        ~Node();
 };
 
 
@@ -52,15 +55,12 @@ class Tahco{
         std::vector<uint32_t> pattern_cnt;
         std::vector<int64_t> hash_base;
         size_t num_trees;
-        size_t num_nodes;
-        std::vector<Node> nodes;
-        std::mutex* tree_mtx;
         
+        Node* root;
 
     public:
         Tahco(StringVector* _patterns_ptr, const Parameters &params);
         void initialize();
-        void verify_tree_building();
         void add_patterns_with_range(const size_t st, const size_t ed);
         void profile_patterns(const std::string &fp, const Parameters &params);
         double profile_patterns_with_tahco(const std::string &fp);
