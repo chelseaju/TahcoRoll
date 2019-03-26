@@ -9,8 +9,9 @@ void exit_with_usage(){
 	"options:\n"
     "  -t number of trees (default %zu)\n"
 	"  -s number of threads (default %zu)\n"
+    "  -b batch size for profiling (default %zu)\n"
     "  -q quiet mode\n"
-    , p.num_trees, p.num_threads
+    , p.num_trees, p.num_threads, p.profile_batch_size
 	);
     exit(1);
 }
@@ -25,6 +26,9 @@ int read_parameters(const int argc, const char* argv[], Parameters &params){
 				break;
             case 's':
                 params.num_threads = static_cast<size_t>(atoi(optarg));
+                break;
+            case 'b':
+                params.profile_batch_size = static_cast<size_t>(atoi(optarg));
                 break;
             case 'q':
                 params.quiet = true;
@@ -41,3 +45,8 @@ int read_parameters(const int argc, const char* argv[], Parameters &params){
     return optind;
 }
 
+double get_time_diff(std::chrono::time_point<std::chrono::system_clock> start) {
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff = end - start;
+    return diff.count();
+}

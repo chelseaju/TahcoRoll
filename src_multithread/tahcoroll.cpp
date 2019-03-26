@@ -34,27 +34,29 @@ int main(int argc, const char **argv){
 
     std::cerr << "Num of Trees = " << params.num_trees << std::endl;
     std::cerr << "Num of Threads = " << params.num_threads << std::endl;
+    std::cerr << "Batch Profiling Size = " << params.profile_batch_size << std::endl;
     std::cerr << "Pattern File = " << pattern_file << std::endl;
     std::cerr << "Seq File = " << seq_file << std::endl;
     std::cerr << "Output File = " << result_file << std::endl;
 
 
 
-	clock_t basic_start;
+	std::chrono::time_point<std::chrono::system_clock> basic_start;
 
     std::cerr << "Loading data with FileReader" << std::endl;
-	basic_start = clock();
+    basic_start = std::chrono::system_clock::now();
     FileReader fr(pattern_file);
     auto data = fr.read_data();
-    std::cout << "Time: " << static_cast<double>(clock() - basic_start) / CLOCKS_PER_SEC << "s" << std::endl;
+    std::cout << "Time: " << get_time_diff(basic_start) << "s" << std::endl;
     std::cout << data.size() << " patterns" << std::endl;
 
+    basic_start = std::chrono::system_clock::now();
     Tahco model(&data, params);
-	std::cout << "Loading Time: " << static_cast<double>(clock() - basic_start) / CLOCKS_PER_SEC << "s" << std::endl;
+	std::cout << "Loading Time: " << get_time_diff(basic_start) << "s" << std::endl;
 
-	basic_start = clock();
+    basic_start = std::chrono::system_clock::now();
     model.profile_patterns(seq_file, params);
-    std::cout << "Profiling Time: " << static_cast<double>(clock() - basic_start) / CLOCKS_PER_SEC << "s" << std::endl;
+    std::cout << "Profiling Time (incl. IO): " << get_time_diff(basic_start) << "s" << std::endl;
 
     model.output_results(result_file);
 

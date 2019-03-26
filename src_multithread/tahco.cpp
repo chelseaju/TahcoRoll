@@ -30,6 +30,7 @@ Node* Node::get_next(int8_t c){
 Tahco::Tahco(StringVector* _patterns_ptr, const Parameters &params){
     patterns_ptr = _patterns_ptr;
     num_trees = params.num_trees;
+    mtx = new std::mutex();
     initialize();
 }
 
@@ -103,7 +104,6 @@ void Tahco::profile_patterns(const std::string &fp, const Parameters &params){
 
 	double time_construction = 0.0;
 	double time_query = 0.0;
-	clock_t basic_start;
     for(size_t iter = 0; iter < num_trees; ++iter){
         std::cerr << "Tree " << iter << std::endl;
         auto st = iter * num_patterns_per_tree;
@@ -115,12 +115,10 @@ void Tahco::profile_patterns(const std::string &fp, const Parameters &params){
         // add patterns
         max_len = 0;
         min_len = SIZE_MAX;
-        basic_start = clock();
-
-
         const size_t num_patterns_per_thread = (ed - st + params.num_threads - 1) / params.num_threads;
 
         ThreadVector threads;
+        auto basic_start = std::chrono::system_clock::now();
         for(size_t thread_i = 0; thread_i < params.num_threads; ++thread_i) {
             auto thread_st = st;
             auto thread_ed = std::min(st + num_patterns_per_thread, ed);
@@ -131,28 +129,34 @@ void Tahco::profile_patterns(const std::string &fp, const Parameters &params){
             th.join();
         }
         std::cerr << "Added patterns." << std::endl;
-
         // build tahco
-        build_tahco();
-		time_construction += static_cast<double>(clock() - basic_start);
+        build_tahco(params);
+		time_construction += get_time_diff(basic_start);
         std::cerr << "Built tacho." << std::endl;
-        std::cerr << "Total construction time: " << time_construction / CLOCKS_PER_SEC<< std::endl;
         
-        time_query += profile_patterns_with_tahco(fp);
+        time_query += profile_patterns_with_tahco(fp, params);
         
         delete root;
     }
 
-	std::cerr << "Total construction time: " << time_construction / CLOCKS_PER_SEC<< std::endl;
-	std::cerr << "Total query time: " << time_query / CLOCKS_PER_SEC << std::endl;
+	std::cerr << "Total construction time: " << time_construction << std::endl;
+	std::cerr << "Total query time: " << time_query << std::endl;
 
 }
 
+void Tahco::profile_patterns_in_pool(std::vector<std::string> &pool){
+    std::vector<int64_t> hash;
+    std::vector<int64_t> hashr;
+    for(auto& cur : pool) {
+        match(cur, hash, hashr);
+    }
+}
 
-double Tahco::profile_patterns_with_tahco(const std::string &fp){
+
+
+double Tahco::profile_patterns_with_tahco(const std::string &fp, const Parameters &params){
     
     double total_time = 0.0;
-	clock_t start_time;
     const auto BUFFER_SIZE = 6400 * 1024;
 
     auto fd = ::open(fp.c_str(), O_RDONLY);
@@ -163,11 +167,16 @@ double Tahco::profile_patterns_with_tahco(const std::string &fp){
 
     char buf[BUFFER_SIZE + 1];
     auto cur = std::string("");
-    int line_no = 0;
+    auto line_no = 0;
 
-    std::vector<int64_t> hash;
-    std::vector<int64_t> hashr;
- 
+    // std::vector<int64_t> hash;
+    // std::vector<int64_t> hashr;
+    
+    size_t pool_size = 0;
+    size_t cur_candidate_thread = 0;
+    std::vector<std::string> pool[params.num_threads];
+    
+
     while(auto bytes_read = ::read(fd, buf, BUFFER_SIZE)) {
         if(bytes_read < -1){
             std::cerr << "Failed while reading " << fp << std::endl;
@@ -179,11 +188,36 @@ double Tahco::profile_patterns_with_tahco(const std::string &fp){
         for(char *p = buf; (p = static_cast<char*>(std::memchr(p, '\n', static_cast<size_t>((buf + bytes_read) - p)))); ++p){            
             *p = '\0';
             if(line_no == 1){
+                /*
                 cur += st;
                 start_time = clock();
                 match(cur, hash, hashr);
                 total_time += static_cast<double>(clock() - start_time);
                 cur.clear();
+                */
+                cur += st;
+                pool[cur_candidate_thread++].emplace_back(cur);
+                ++pool_size;
+                if(cur_candidate_thread == params.num_threads) {
+                    cur_candidate_thread = 0;
+                }
+                cur.clear();
+                
+                if(pool_size == params.profile_batch_size) {
+                    ThreadVector threads;
+                    auto basic_start = std::chrono::system_clock::now();
+                    for(size_t thread_i = 0; thread_i < params.num_threads; ++thread_i) {
+                        threads.emplace_back(std::thread(&Tahco::profile_patterns_in_pool, this, std::ref(pool[thread_i])));
+                    }
+                    for(auto& th : threads) {
+                        th.join();
+                    }
+                    total_time += get_time_diff(basic_start);
+                    for(size_t thread_i = 0; thread_i < params.num_threads; ++thread_i) {
+                        pool[thread_i].clear();
+                    }
+                    pool_size = 0;
+                }
             }
             st = p + 1;
             ++line_no;
@@ -194,6 +228,21 @@ double Tahco::profile_patterns_with_tahco(const std::string &fp){
         if(line_no == 1){
             cur.append(st, static_cast<size_t>((buf + bytes_read) - st));
         }
+    }
+    if(pool_size > 0) {
+        ThreadVector threads;
+        auto basic_start = std::chrono::system_clock::now();
+        for(size_t thread_i = 0; thread_i < params.num_threads; ++thread_i) {
+            threads.emplace_back(std::thread(&Tahco::profile_patterns_in_pool, this, std::ref(pool[thread_i])));
+        }
+        for(auto& th : threads) {
+            th.join();
+        }
+        total_time += get_time_diff(basic_start);
+        for(size_t thread_i = 0; thread_i < params.num_threads; ++thread_i) {
+            pool[thread_i].clear();
+        }
+        pool_size = 0;
     }
     return total_time;
 }
@@ -220,13 +269,9 @@ void Tahco::add_pattern(std::string &pattern, size_t pattern_idx){
     cur_node->hashmap->insert({{cur_hash, pattern_idx}});
 }
 
-
-void Tahco::build_tahco(){
-    std::queue<Node*> q;
+void Tahco::build_tahco_from_queue(std::queue<Node*> &q){
     Node* cur;
     Node* p;
-
-    q.push(root);
     while(!q.empty()){
         cur = q.front();
         q.pop();
@@ -241,6 +286,46 @@ void Tahco::build_tahco(){
             for(p = cur->fail; p && p->next[1] == NULL; p = p->fail);
             cur->next[1]->fail = (p)?(p->next[1]):(root);
             q.push(cur->next[1]);
+        }
+    }
+}
+
+void Tahco::build_tahco(const Parameters &params){
+    std::queue<Node*> q;
+    std::queue<Node*> q_threads[params.num_threads];
+    Node* cur;
+    Node* p;
+
+    q.push(root);
+    //while(!q.empty()){
+    while(!q.empty() && q.size()){
+        cur = q.front();
+        q.pop();
+        // 0
+        if(cur->next[0]){
+            for(p = cur->fail; p && p->next[0] == NULL; p = p->fail);
+            cur->next[0]->fail = (p)?(p->next[0]):(root);
+            q.push(cur->next[0]);
+        }
+        // 1
+        if(cur->next[1]){
+            for(p = cur->fail; p && p->next[1] == NULL; p = p->fail);
+            cur->next[1]->fail = (p)?(p->next[1]):(root);
+            q.push(cur->next[1]);
+        }
+    }
+
+    if(!q.empty()){
+        for(int i = 0; !q.empty(); ++i){
+            q_threads[i % params.num_threads].push(q.front());
+            q.pop();
+        }
+        ThreadVector threads;
+        for(size_t thread_i = 0; thread_i < params.num_threads; ++thread_i) {
+            threads.emplace_back(std::thread(&Tahco::build_tahco_from_queue, this, std::ref(q_threads[thread_i])));
+        }
+        for(auto& th : threads) {
+            th.join();
         }
     }
 }
@@ -312,18 +397,19 @@ void Tahco::match(std::string &text, std::vector<int64_t> &hash, std::vector<int
                 	h = compute_range_hash(hash, (i + 1) - (tmp->depth), i);
                 	if(tmp->hashmap->count(h) > 0){
                     	auto hv = tmp->hashmap->at(h);
+                        /*
                     	if(patterns[hv]->back() == text[i]){
                             ++pattern_cnt[hv];
                         }
-                        /*
+                        */
                     	if(patterns[hv]->back() == text[i] &&
                            patterns[hv]->at(tmp->depth - 2) == text[i-1] &&
                            patterns[hv]->at(tmp->depth - 4) == text[i-3] &&
                            patterns[hv]->at(tmp->depth - 5) == text[i-4] &&
                            patterns[hv]->at(tmp->depth - 3) == text[i-2]){
+                            std::lock_guard<std::mutex> guard_node(*mtx);
                             ++pattern_cnt[hv];
                         }
-                        */
                     }
                 }
             }
@@ -350,18 +436,19 @@ void Tahco::match(std::string &text, std::vector<int64_t> &hash, std::vector<int
                     h = compute_range_hash(hashr, (i + 1) - (tmp->depth), i);
                     if(tmp->hashmap->count(h) > 0){
                         auto hv = tmp->hashmap->at(h);
+                        /*
                         if(patterns[hv]->back() == char2comp(text[len - 1 - i])){
                             ++pattern_cnt[hv];
                         }
-                        /*
+                        */
                         if(patterns[hv]->back() == char2comp(text[len - 1 - i]) &&
                            patterns[hv]->at(tmp->depth - 2) == char2comp(text[len - 1 - i + 1]) &&
                            patterns[hv]->at(tmp->depth - 4) == char2comp(text[len - 1 - i + 3]) &&
                            patterns[hv]->at(tmp->depth - 5) == char2comp(text[len - 1 - i + 4]) &&
                            patterns[hv]->at(tmp->depth - 3) == char2comp(text[len - 1 - i + 2])){
+                            std::lock_guard<std::mutex> guard_node(*mtx);
                             ++pattern_cnt[hv];
                         }
-                        */
                     }
                 }
             }
