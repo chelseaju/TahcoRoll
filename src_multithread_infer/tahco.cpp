@@ -357,6 +357,7 @@ void Tahco::match(std::string &text, std::vector<int64_t> &hash, std::vector<int
                     		patterns[hv]->at(nodes[tmp].depth - 4) == text[i-3] &&
                            patterns[hv]->at(nodes[tmp].depth - 5) == text[i-4] &&
                            patterns[hv]->at(nodes[tmp].depth - 3) == text[i-2]){
+                            std::lock_guard<std::mutex> guard_node(*mtx);
                             ++pattern_cnt[hv];
                         }
                     }
@@ -389,6 +390,7 @@ void Tahco::match(std::string &text, std::vector<int64_t> &hash, std::vector<int
                            patterns[hv]->at(nodes[tmp].depth - 4) == char2comp(text[len - 1 - i + 3]) &&
                            patterns[hv]->at(nodes[tmp].depth - 5) == char2comp(text[len - 1 - i + 4]) &&
                            patterns[hv]->at(nodes[tmp].depth - 3) == char2comp(text[len - 1 - i + 2])){
+                            std::lock_guard<std::mutex> guard_node(*mtx);
                             ++pattern_cnt[hv];
                         }
                     }
