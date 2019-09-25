@@ -16,6 +16,9 @@ Binary files are also provided:
 tahcoroll, tahcoload
 ```
 
+## Data
+Simulated datasets can be downloaded here: https://figshare.com/s/6f02feaf89c4ff6ddc9e
+
 Test data is provided under /test_data
 
 ## To Run:
